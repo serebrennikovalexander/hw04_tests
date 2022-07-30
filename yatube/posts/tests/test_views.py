@@ -303,9 +303,10 @@ class PaginatorViewsTest(TestCase):
     # Проверяем страницу /pfofile/username/
     def test_profile_first_page_contains_ten_records(self):
         response = self.author_client.get(
-            reverse('posts:profile',
-                    kwargs={'username': PaginatorViewsTest.author_user.username}
-                    )
+            reverse(
+                'posts:profile',
+                kwargs={'username': PaginatorViewsTest.author_user.username}
+            )
         )
         # Проверка: количество постов на первой странице равно 10.
         self.assertEqual(len(response.context['page_obj']), 10)
@@ -313,9 +314,10 @@ class PaginatorViewsTest(TestCase):
     def test_profile_second_page_contains_five_records(self):
         # Проверка: на второй странице должно быть пять постов.
         response = self.author_client.get(
-            reverse('posts:profile',
-                    kwargs={'username': PaginatorViewsTest.author_user.username}
-                    )
+            reverse(
+                'posts:profile',
+                kwargs={'username': PaginatorViewsTest.author_user.username}
+            )
             + '?page=2'
         )
         self.assertEqual(len(response.context['page_obj']), 5)
