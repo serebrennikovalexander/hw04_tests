@@ -25,7 +25,7 @@ class PostsURLTests(TestCase):
         # Создаем пост
         cls.post = Post.objects.create(
             author=cls.author_user,
-            text='Тест.'*20,
+            text='Тест.' * 20,
             group=cls.group,
         )
 
@@ -123,12 +123,12 @@ class PostsURLTests(TestCase):
         """
         # Шаблоны по адресам
         templates_url_names = {
-            self.url_index:  'posts/index.html',
+            self.url_index: 'posts/index.html',
             self.url_group_list: 'posts/group_list.html',
             self.url_profile: 'posts/profile.html',
             self.url_post_detail: 'posts/post_detail.html',
             self.url_post_edit: 'posts/create_post.html',
-            self.url_post_create:  'posts/create_post.html',
+            self.url_post_create: 'posts/create_post.html',
         }
         for address, template in templates_url_names.items():
             with self.subTest(address=address):

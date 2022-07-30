@@ -38,7 +38,7 @@ class PostsCreateFormTests(TestCase):
         # Подсчитаем количество записей в Post
         posts_count = Post.objects.count()
         form_data = {
-            'text': 'Тест'*2,
+            'text': 'Тест' * 2,
         }
         # Отправляем POST-запрос
         response = self.author_client.post(
@@ -47,7 +47,7 @@ class PostsCreateFormTests(TestCase):
             follow=True
         )
         # Проверяем, увеличилось ли число постов
-        self.assertEqual(Post.objects.count(), posts_count+1)
+        self.assertEqual(Post.objects.count(), posts_count + 1)
         # Проверяем, сработал ли редирект
         self.assertRedirects(
             response, reverse(
@@ -60,7 +60,7 @@ class PostsCreateFormTests(TestCase):
         # Проверяем, что создалась запись с заданным текстом
         self.assertTrue(
             Post.objects.filter(
-                text='Тест'*2
+                text='Тест' * 2
             ).exists()
         )
 
@@ -70,7 +70,7 @@ class PostsCreateFormTests(TestCase):
         # Подсчитаем количество записей в Post
         posts_count = Post.objects.count()
         form_data = {
-            'text': 'Тест'*3,
+            'text': 'Тест' * 3,
         }
         # Отправляем POST-запрос
         self.author_client.post(
@@ -86,7 +86,7 @@ class PostsCreateFormTests(TestCase):
         # Проверяем, что произошло изменение поста
         self.assertTrue(
             Post.objects.filter(
-                text='Тест'*3,
+                text='Тест' * 3,
                 id=PostsCreateFormTests.post_1.id
             ).exists()
         )

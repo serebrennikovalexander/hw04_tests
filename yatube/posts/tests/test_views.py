@@ -33,13 +33,13 @@ class PostsPagesTests(TestCase):
         )
         cls.post_2 = Post.objects.create(
             author=cls.author_user,
-            text='Тест.'*2,
+            text='Тест.' * 2,
             group=cls.group_1,
         )
         # Создаем пост с второй группой
         cls.post_3 = Post.objects.create(
             author=cls.author_user,
-            text='Тест.'*3,
+            text='Тест.' * 3,
             group=cls.group_2,
         )
 
@@ -120,7 +120,7 @@ class PostsPagesTests(TestCase):
             reverse('posts:group_list',
                     kwargs={'slug': PostsPagesTests.group_1.slug}
                     )
-            )
+        )
         # Первый пост на странице группы имеет номер 2
         first_object = response.context['page_obj'][0]
         post_group_0 = first_object.group
@@ -139,7 +139,7 @@ class PostsPagesTests(TestCase):
             reverse('posts:profile',
                     kwargs={'username': PostsPagesTests.author_user.username}
                     )
-            )
+        )
         # Первый пост на странице пользователя имеет номер 3
         first_object = response.context['page_obj'][0]
         post_author_0 = first_object.author
@@ -159,7 +159,7 @@ class PostsPagesTests(TestCase):
             reverse('posts:post_detail',
                     kwargs={'post_id': PostsPagesTests.post_1.id}
                     )
-            )
+        )
         self.assertIn('post', response.context)
         self.assertIn('title', response.context)
         self.assertIn('number_of_posts', response.context)
@@ -177,7 +177,7 @@ class PostsPagesTests(TestCase):
             reverse('posts:post_edit',
                     kwargs={'post_id': PostsPagesTests.post_1.id}
                     )
-            )
+        )
         self.assertIn('form', response.context)
         self.assertIsInstance(response.context['form'], PostForm)
         self.assertEqual(
@@ -191,7 +191,7 @@ class PostsPagesTests(TestCase):
         """
         response = self.author_client.get(
             reverse('posts:post_create')
-            )
+        )
         self.assertIn('form', response.context)
         self.assertIsInstance(response.context['form'], PostForm)
 
@@ -202,7 +202,7 @@ class PostsPagesTests(TestCase):
         """
         post_4 = Post.objects.create(
             author=PostsPagesTests.author_user,
-            text='Тест.'*4,
+            text='Тест.' * 4,
             group=PostsPagesTests.group_1,
         )
         # Провекра, что пост оказался на главной странице
@@ -216,7 +216,7 @@ class PostsPagesTests(TestCase):
             reverse('posts:group_list',
                     kwargs={'slug': PostsPagesTests.group_1.slug}
                     )
-            )
+        )
         self.assertEqual(len(response_2.context['page_obj']), 3)
         # Провекра, что первый пост на странице это пост номер 4
         first_object_2 = response_2.context['page_obj'][0]
@@ -226,7 +226,7 @@ class PostsPagesTests(TestCase):
             reverse('posts:profile',
                     kwargs={'username': PostsPagesTests.author_user.username}
                     )
-            )
+        )
         self.assertEqual(len(response_3.context['page_obj']), 4)
         # Провекра, что первый пост на странице это пост номер 4
         first_object_3 = response_3.context['page_obj'][0]
@@ -237,7 +237,7 @@ class PostsPagesTests(TestCase):
             reverse('posts:group_list',
                     kwargs={'slug': PostsPagesTests.group_2.slug}
                     )
-            )
+        )
         # Проверка, что пост не появился на странице второй группы
         self.assertEqual(len(response_4.context['page_obj']), 1)
 
@@ -259,7 +259,7 @@ class PaginatorViewsTest(TestCase):
         for i in range(15):
             Post.objects.create(
                 author=cls.author_user,
-                text='Тест.'*20,
+                text='Тест.' * 20,
                 group=cls.group,
             )
 
@@ -286,7 +286,7 @@ class PaginatorViewsTest(TestCase):
             reverse('posts:group_list',
                     kwargs={'slug': PaginatorViewsTest.group.slug}
                     )
-            )
+        )
         # Проверка: количество постов на первой странице равно 10.
         self.assertEqual(len(response.context['page_obj']), 10)
 
@@ -297,27 +297,25 @@ class PaginatorViewsTest(TestCase):
                     kwargs={'slug': PaginatorViewsTest.group.slug}
                     )
             + '?page=2'
-            )
+        )
         self.assertEqual(len(response.context['page_obj']), 5)
 
     # Проверяем страницу /pfofile/username/
     def test_profile_first_page_contains_ten_records(self):
         response = self.author_client.get(
-            reverse(
-                'posts:profile',
-                kwargs={'username': PaginatorViewsTest.author_user.username}
-                )
-            )
+            reverse('posts:profile',
+                    kwargs={'username': PaginatorViewsTest.author_user.username}
+                    )
+        )
         # Проверка: количество постов на первой странице равно 10.
         self.assertEqual(len(response.context['page_obj']), 10)
 
     def test_profile_second_page_contains_five_records(self):
         # Проверка: на второй странице должно быть пять постов.
         response = self.author_client.get(
-            reverse(
-                'posts:profile',
-                kwargs={'username': PaginatorViewsTest.author_user.username}
-                )
+            reverse('posts:profile',
+                    kwargs={'username': PaginatorViewsTest.author_user.username}
+                    )
             + '?page=2'
-            )
+        )
         self.assertEqual(len(response.context['page_obj']), 5)
