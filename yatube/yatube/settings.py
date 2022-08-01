@@ -10,7 +10,9 @@ EMAIL_FILE_PATH = os.path.join(BASE_DIR, 'sent_emails')
 
 NUMBER_OF_POSTS = 10
 
-NUMBER_OF_CHARACTERS = 30
+NUMBER_OF_CHARACTERS_FOR_VIEWS = 30
+
+NUMBER_OF_CHARACTERS_FOR_MODELS = 15
 
 SECRET_KEY = '=231j#b#5nvk4_%8kk&k%(%tryq)(6lx=qne&3lq-le+9&+vh)'
 

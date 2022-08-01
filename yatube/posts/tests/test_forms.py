@@ -1,11 +1,8 @@
-from django.contrib.auth import get_user_model
 from django.test import Client, TestCase
 from django.urls import reverse
 
-from ..forms import PostForm
-from ..models import Group, Post
-
-User = get_user_model()
+from posts.forms import PostForm
+from posts.models import Group, Post, User
 
 
 class PostsCreateFormTests(TestCase):
@@ -48,7 +45,7 @@ class PostsCreateFormTests(TestCase):
         )
         # Проверяем, увеличилось ли число постов
         self.assertEqual(Post.objects.count(), posts_count + 1)
-        # Проверяем, сработал ли редирект
+        # Проверяем, сработал ли редирект на страницу автора
         self.assertRedirects(
             response, reverse(
                 'posts:profile',
@@ -58,11 +55,9 @@ class PostsCreateFormTests(TestCase):
             )
         )
         # Проверяем, что создалась запись с заданным текстом
-        self.assertTrue(
-            Post.objects.filter(
-                text='Тест' * 2
-            ).exists()
-        )
+        last_obj = Post.objects.all().first()
+        self.assertEqual(last_obj.author, PostsCreateFormTests.author_user)
+        self.assertEqual(last_obj.text, form_data['text'])
 
     # Проверяем форму для редактирования поста
     def test_form_edit_post(self):
@@ -73,7 +68,7 @@ class PostsCreateFormTests(TestCase):
             'text': 'Тест' * 3,
         }
         # Отправляем POST-запрос
-        self.author_client.post(
+        response = self.author_client.post(
             reverse(
                 'posts:post_edit',
                 kwargs={'post_id': PostsCreateFormTests.post_1.id}
@@ -83,10 +78,16 @@ class PostsCreateFormTests(TestCase):
         )
         # Проверяем, увеличилось ли число постов
         self.assertEqual(Post.objects.count(), posts_count)
-        # Проверяем, что произошло изменение поста
-        self.assertTrue(
-            Post.objects.filter(
-                text='Тест' * 3,
-                id=PostsCreateFormTests.post_1.id
-            ).exists()
+        # Проверяем, сработал ли редирект на страницу поста
+        self.assertRedirects(
+            response, reverse(
+                'posts:post_detail',
+                kwargs={'post_id':
+                        PostsCreateFormTests.post_1.id
+                        }
+            )
         )
+        # Проверяем, что произошло изменение поста
+        first_obj = Post.objects.all().first()
+        self.assertEqual(first_obj.author, PostsCreateFormTests.author_user)
+        self.assertEqual(first_obj.text, form_data['text'])

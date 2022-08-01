@@ -1,11 +1,8 @@
-from django.contrib.auth import get_user_model
 from django.test import Client, TestCase
 from django.urls import reverse
 
-from ..forms import PostForm
-from ..models import Group, Post
-
-User = get_user_model()
+from posts.forms import PostForm
+from posts.models import Group, Post, User
 
 
 class PostsPagesTests(TestCase):
@@ -145,7 +142,6 @@ class PostsPagesTests(TestCase):
         post_author_0 = first_object.author
         self.assertIn('page_obj', response.context)
         self.assertIn('author', response.context)
-        self.assertIn('number_of_posts', response.context)
         # Провекра количества постов на странице
         # У автора должно быть 3 поста
         self.assertEqual(len(response.context['page_obj']), 3)
@@ -161,8 +157,6 @@ class PostsPagesTests(TestCase):
                     )
         )
         self.assertIn('post', response.context)
-        self.assertIn('title', response.context)
-        self.assertIn('number_of_posts', response.context)
         # Провекра, что у поста правильный id
         self.assertEqual(
             response.context['post'].id, PostsPagesTests.post_1.id
@@ -180,9 +174,6 @@ class PostsPagesTests(TestCase):
         )
         self.assertIn('form', response.context)
         self.assertIsInstance(response.context['form'], PostForm)
-        self.assertEqual(
-            response.context['post'].id, PostsPagesTests.post_1.id
-        )
 
     # Проверка контекста страницы /create/
     def test_post_create_show_correct_context(self):

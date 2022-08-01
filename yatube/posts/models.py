@@ -1,5 +1,8 @@
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.db import models
+
+NUMBER_OF_CHARACTERS_FOR_MODELS = settings.NUMBER_OF_CHARACTERS_FOR_MODELS
 
 User = get_user_model()
 
@@ -42,4 +45,4 @@ class Post(models.Model):
         ordering = ('-pub_date',)
 
     def __str__(self):
-        return self.text[:15]
+        return self.text[:NUMBER_OF_CHARACTERS_FOR_MODELS]

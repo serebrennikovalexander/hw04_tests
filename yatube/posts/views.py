@@ -7,14 +7,17 @@ from .forms import PostForm
 from .models import Group, Post, User
 
 NUMBER_OF_POSTS = settings.NUMBER_OF_POSTS
-NUMBER_OF_CHARACTERS = settings.NUMBER_OF_CHARACTERS
+
+
+def paginator_function(request, argument):
+    paginator = Paginator(argument, NUMBER_OF_POSTS)
+    page_number = request.GET.get('page')
+    return paginator.get_page(page_number)
 
 
 def index(request):
     posts = Post.objects.select_related('author').all()
-    paginator = Paginator(posts, NUMBER_OF_POSTS)
-    page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
+    page_obj = paginator_function(request, posts)
     template = 'posts/index.html'
     context = {
         'page_obj': page_obj,
@@ -25,9 +28,7 @@ def index(request):
 def group_posts(request, slug):
     group = get_object_or_404(Group, slug=slug)
     posts = group.posts.all()
-    paginator = Paginator(posts, NUMBER_OF_POSTS)
-    page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
+    page_obj = paginator_function(request, posts)
     template = 'posts/group_list.html'
     context = {
         'page_obj': page_obj,
@@ -39,14 +40,10 @@ def group_posts(request, slug):
 def profile(request, username):
     author = get_object_or_404(User, username=username)
     author_posts = author.posts.all()
-    number_of_posts = author.posts.count()
-    paginator = Paginator(author_posts, NUMBER_OF_POSTS)
-    page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
+    page_obj = paginator_function(request, author_posts)
     template = 'posts/profile.html'
     context = {
         'author': author,
-        'number_of_posts': number_of_posts,
         'page_obj': page_obj,
     }
     return render(request, template, context)
@@ -54,13 +51,9 @@ def profile(request, username):
 
 def post_detail(request, post_id):
     post = get_object_or_404(Post, pk=post_id)
-    number_of_posts = post.author.posts.count()
-    title = post.text[:NUMBER_OF_CHARACTERS]
     template = 'posts/post_detail.html'
     context = {
         'post': post,
-        'title': title,
-        'number_of_posts': number_of_posts,
     }
     return render(request, template, context)
 
@@ -91,7 +84,6 @@ def post_edit(request, post_id):
 
         context = {
             'form': form,
-            'post': post,
             'is_edit': is_edit,
         }
         return render(request, template, context)

@@ -1,11 +1,9 @@
 from http import HTTPStatus
 
-from django.contrib.auth import get_user_model
 from django.test import Client, TestCase
+from django.urls import reverse
 
-from ..models import Group, Post
-
-User = get_user_model()
+from posts.models import Group, Post, User
 
 
 class PostsURLTests(TestCase):
@@ -40,51 +38,63 @@ class PostsURLTests(TestCase):
         self.author_user = PostsURLTests.author_user
         self.author_client = Client()
         self.author_client.force_login(self.author_user)
-        # URL-адреса
-        self.url_index = '/'
-        self.url_group_list = f'/group/{PostsURLTests.group.slug}/'
-        self.url_profile = f'/profile/{PostsURLTests.author_user.username}/'
-        self.url_post_detail = f'/posts/{PostsURLTests.post.id}/'
-        self.url_post_edit = f'/posts/{PostsURLTests.post.id}/edit/'
-        self.url_post_create = '/create/'
-        self.url_unexisting_page = '/unexisting_page/'
 
     # Проверяем доступность страниц для неавторизованного пользователя
     def test_homepage_url_exists_at_desired_location(self):
         """Страница / доступна любому пользователю."""
-        response = self.guest_client.get(self.url_index)
+        response = self.guest_client.get(reverse('posts:index'))
         self.assertEqual(response.status_code, HTTPStatus.OK)
 
     def test_group_list_url_exists_at_desired_location(self):
         """Страница /group/slug/ доступна любому пользователю."""
-        response = self.guest_client.get(self.url_group_list)
+        response = self.guest_client.get(
+            reverse(
+                'posts:group_list',
+                kwargs={'slug': PostsURLTests.group.slug}
+            )
+        )
         self.assertEqual(response.status_code, HTTPStatus.OK)
 
     def test_profile_url_exists_at_desired_location(self):
         """Страница /pfofile/username/ доступна любому пользователю."""
-        response = self.guest_client.get(self.url_profile)
+        response = self.guest_client.get(
+            reverse(
+                'posts:profile',
+                kwargs={'username': PostsURLTests.author_user.username}
+            )
+        )
         self.assertEqual(response.status_code, HTTPStatus.OK)
 
     def test_post_detail_url_exists_at_desired_location(self):
         """Страница /posts/post_id/ доступна любому пользователю."""
-        response = self.guest_client.get(self.url_post_detail)
+        response = self.guest_client.get(
+            reverse(
+                'posts:post_detail',
+                kwargs={'post_id': PostsURLTests.post.id}
+            )
+        )
         self.assertEqual(response.status_code, HTTPStatus.OK)
 
     def test_unexisting_page_url_not_found(self):
         """Страница /unexisting_page/ не найдена."""
-        response = self.guest_client.get(self.url_unexisting_page)
+        response = self.guest_client.get('/unexisting_page/')
         self.assertEqual(response.status_code, HTTPStatus.NOT_FOUND)
 
     # Проверяем доступность страниц для авторизованного пользователя
     def test_create_post_url_exists_at_desired_location(self):
         """Страница /create/ доступна авторизованному пользователю."""
-        response = self.test_client.get(self.url_post_create)
+        response = self.test_client.get(reverse('posts:post_create'))
         self.assertEqual(response.status_code, HTTPStatus.OK)
 
     # Проверяем доступность страниц для автора пользователя
     def test_edit_post_url_exists_at_desired_location(self):
         """Страница /posts/post_id/edit/ доступна только автору поста."""
-        response = self.author_client.get(self.url_post_edit)
+        response = self.author_client.get(
+            reverse(
+                'posts:post_edit',
+                kwargs={'post_id': PostsURLTests.post.id}
+            )
+        )
         self.assertEqual(response.status_code, HTTPStatus.OK)
 
     # Проверяем редиректы для неавторизованного пользователя
@@ -92,18 +102,36 @@ class PostsURLTests(TestCase):
         """Страница /posts/post_id/edit/ перенаправляет анонимного
         пользователя на страницу логина.
         """
-        response = self.guest_client.get(self.url_post_edit, follow=True)
+        response = self.guest_client.get(
+            reverse(
+                'posts:post_edit',
+                kwargs={'post_id': PostsURLTests.post.id}
+            ), follow=True
+        )
         self.assertRedirects(
-            response, f'/auth/login/?next={self.url_post_edit}'
+            response,
+            (reverse('users:login')
+             + "?next="
+             + reverse('posts:post_edit',
+                       kwargs={'post_id': PostsURLTests.post.id}
+                       )
+             )
         )
 
     def test_create_post_url_redirect_anonymous_user_on_admin_login(self):
         """Страница /create/ перенаправляет анонимного
         пользователя на страницу логина.
         """
-        response = self.guest_client.get(self.url_post_create, follow=True)
+        response = self.guest_client.get(
+            reverse('posts:post_create'),
+            follow=True
+        )
         self.assertRedirects(
-            response, f'/auth/login/?next={self.url_post_create}'
+            response,
+            (reverse('users:login')
+             + "?next="
+             + reverse('posts:post_create')
+             )
         )
 
     # Проверяем редирект для авторизованного пользователя, но не автора поста
@@ -112,9 +140,16 @@ class PostsURLTests(TestCase):
         пользователя, который не является автором поста,
         на станицу /posts/post_id/.
         """
-        response = self.test_client.get(self.url_post_edit, follow=True)
+        response = self.test_client.get(
+            reverse(
+                'posts:post_edit',
+                kwargs={'post_id': PostsURLTests.post.id}
+            ), follow=True
+        )
         self.assertRedirects(
-            response, self.url_post_detail
+            response, reverse('posts:post_detail',
+                              kwargs={'post_id': PostsURLTests.post.id}
+                              )
         )
 
     def test_urls_uses_correct_template(self):
@@ -123,12 +158,33 @@ class PostsURLTests(TestCase):
         """
         # Шаблоны по адресам
         templates_url_names = {
-            self.url_index: 'posts/index.html',
-            self.url_group_list: 'posts/group_list.html',
-            self.url_profile: 'posts/profile.html',
-            self.url_post_detail: 'posts/post_detail.html',
-            self.url_post_edit: 'posts/create_post.html',
-            self.url_post_create: 'posts/create_post.html',
+            reverse(
+                'posts:index'): (
+                'posts/index.html'
+            ),
+            reverse(
+                'posts:group_list',
+                kwargs={'slug': PostsURLTests.group.slug}): (
+                'posts/group_list.html'
+            ),
+            reverse(
+                'posts:profile',
+                kwargs={'username': PostsURLTests.author_user.username}): (
+                'posts/profile.html'
+            ),
+            reverse(
+                'posts:post_detail',
+                kwargs={'post_id': PostsURLTests.post.id}): (
+                'posts/post_detail.html'
+            ),
+            reverse(
+                'posts:post_edit',
+                kwargs={'post_id': PostsURLTests.post.id}): (
+                'posts/create_post.html'
+            ),
+            reverse('posts:post_create'): (
+                'posts/create_post.html'
+            ),
         }
         for address, template in templates_url_names.items():
             with self.subTest(address=address):
